@@ -1,0 +1,28 @@
+#+title: Readme
+#+author: Atri Hegde
+#+auto_tangle: t
+
+
+* Intro to Bash and Linux
+
+Practical consists of 100 users (user1 - user100) on a docker container.
+
+** For each user
+- have file ~/fruit.txt
+- a couple dummy files in ~/tree
+- have file rename.txt with a groceries todo list inside of it
+
+** Globally
+- Have grep installed
+
+* Dockerfile
+
+#+begin_src Dockerfile :tangle Dockerfile
+
+#+end_src
+
+* docker-compose
+
+#+begin_src yml :tangle docker-compose.yml
+
+#+end_src
