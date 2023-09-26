@@ -1,0 +1,9 @@
+#+title: Readme
+#+author: Atri Hegde
+
+* Preface
+
+Will contains all the practicals used in our weekly sessions
+
+* Sessions
+- [[./intro-to-bash-and-linux/README.org][Intro to Bash and Linux]]
