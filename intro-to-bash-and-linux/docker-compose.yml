@@ -1,1 +1,10 @@
+version: '3'
 
+services:
+  container:
+    image: my_image
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "2222:22"

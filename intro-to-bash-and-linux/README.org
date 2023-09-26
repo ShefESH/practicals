@@ -2,6 +2,15 @@
 #+author: Atri Hegde
 #+auto_tangle: t
 
+* Table of Contents :TOC:
+- [[#intro-to-bash-and-linux][Intro to Bash and Linux]]
+  - [[#for-each-user][For each user]]
+  - [[#globally][Globally]]
+- [[#setup-script][Setup script]]
+- [[#dockerfile][Dockerfile]]
+  - [[#keep-container-alive][keep container alive]]
+- [[#docker-compose][docker-compose]]
+- [[#makefile][Makefile]]
 
 * Intro to Bash and Linux
 
@@ -15,14 +24,60 @@ Practical consists of 100 users (user1 - user100) on a docker container.
 ** Globally
 - Have grep installed
 
+
+* Setup script
+
+#+begin_src bash :tangle init.sh :shebang #!/bin/bash
+for i in {1..100}; do \
+        useradd -m -s /bin/bash -p "$(openssl passwd -1 user${i})" user$i; \
+done
+#+end_src
+
 * Dockerfile
 
-#+begin_src Dockerfile :tangle Dockerfile
+#+begin_src dockerfile :tangle Dockerfile
+#+end_src
 
+** keep container alive
+
+#+begin_src shell :tangle init.sh
+while true; do sleep 1; done
 #+end_src
 
 * docker-compose
 
-#+begin_src yml :tangle docker-compose.yml
+#+begin_src yaml :tangle docker-compose.yml
+version: '3'
 
+services:
+  container:
+    image: my_image
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "2222:22"
+#+end_src
+
+* Makefile
+
+Makefile to make our lives easier
+
+#+begin_src makefile :tangle Makefile
+default: help
+
+build: ## Build image from scratch
+		@docker-compose build --no-cache
+
+run: ## Run docker compose
+		@docker compose up --build
+
+up: ## Run docker compose in daemon mode
+		@docker compose up -d --build
+
+down: ## Shut down the running docker daemon and delete its volumes
+		@docker compose down -v
+
+help: ## Display this help message
+		@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n"} /^[$$()% a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 #+end_src
