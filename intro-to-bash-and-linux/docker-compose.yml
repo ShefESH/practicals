@@ -2,9 +2,9 @@ version: '3'
 
 services:
   container:
-    image: my_image
+    image: sesh_bash_linux
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - "2222:22"
+      - "2222:2222"

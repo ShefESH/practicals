@@ -7,6 +7,7 @@
   - [[#for-each-user][For each user]]
   - [[#globally][Globally]]
 - [[#setup-script][Setup script]]
+- [[#sshd-config][SSHD config]]
 - [[#dockerfile][Dockerfile]]
   - [[#keep-container-alive][keep container alive]]
 - [[#docker-compose][docker-compose]]
@@ -28,19 +29,73 @@ Practical consists of 100 users (user1 - user100) on a docker container.
 * Setup script
 
 #+begin_src bash :tangle init.sh :shebang #!/bin/bash
-for i in {1..100}; do \
-        useradd -m -s /bin/bash -p "$(openssl passwd -1 user${i})" user$i; \
-done
+mkdir /run/sshd
+# Make sure script doesn't run twice
+if ! grep -q user80 "/etc/passwd"; then
+    # Create users
+    for num in $(seq 1 80)
+    do
+        password=$(echo 'SESH_LINUX' | openssl passwd -6 -stdin)
+        username=user$num
+        useradd -m -s /bin/bash $username --password $password
+        # all actions as user/group
+        sudo runuser "$username" -g $username
+        # Add files and folders for each user
+        echo "Good job finding this hidden file!" > /home/$username/.hidden.txt
+        echo "Tomatoes" > /home/$username/fruit.txt
+        echo "- Grapes\n- Oranges\n- Peaches" > /home/$username/rename.txt
+        mkdir /home/$username/tree && echo "Just a leaf" > /home/$username/tree/leaf.txt
+        # Use root user/group
+        sudo runuser "root" -g root
+        # Create a file as root
+        echo "high permissions" > /home/$username/perms.txt
+    done
+fi
+#+end_src
+
+* SSHD config
+
+#+begin_src conf :tangle sshd_config
+Include /etc/ssh/sshd_config.d/*.conf
+ChallengeResponseAuthentication no
+UsePAM yes
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem       sftp    /usr/lib/openssh/sftp-server
+PasswordAuthentication yes
+Port 2222
 #+end_src
 
 * Dockerfile
 
 #+begin_src dockerfile :tangle Dockerfile
+FROM ubuntu:latest
+
+RUN apt update
+
+RUN DEBIAN_FRONTEND=noninteractive apt install ubuntu-minimal ubuntu-standard vim openssl openssh-server -y
+
+COPY sshd_config /etc/ssh/sshd_config
+
+EXPOSE 2222
+
+RUN mkdir /run/sshd
+
+COPY init.sh /init.sh
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /init.sh
+RUN chmod +x /entrypoint.sh
+RUN /init.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 #+end_src
 
 ** keep container alive
 
-#+begin_src shell :tangle init.sh
+#+begin_src shell :shebang #!/bin/bash :tangle entrypoint.sh
+/usr/sbin/sshd -D
 while true; do sleep 1; done
 #+end_src
 
@@ -51,12 +106,12 @@ version: '3'
 
 services:
   container:
-    image: my_image
+    image: sesh_bash_linux
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - "2222:22"
+      - "2222:2222"
 #+end_src
 
 * Makefile
