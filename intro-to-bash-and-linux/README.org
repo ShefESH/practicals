@@ -38,15 +38,11 @@ if ! grep -q user80 "/etc/passwd"; then
         password=$(echo 'SESH_LINUX' | openssl passwd -6 -stdin)
         username=user$num
         useradd -m -s /bin/bash $username --password $password
-        # all actions as user/group
-        sudo runuser "$username" -g $username
         # Add files and folders for each user
-        echo "Good job finding this hidden file!" > /home/$username/.hidden.txt
-        echo "Tomatoes" > /home/$username/fruit.txt
-        echo "- Grapes\n- Oranges\n- Peaches" > /home/$username/rename.txt
-        mkdir /home/$username/tree && echo "Just a leaf" > /home/$username/tree/leaf.txt
-        # Use root user/group
-        sudo runuser "root" -g root
+        runuser "$username" -g $username echo "Good job finding this hidden file!" > /home/$username/.hidden.txt
+        runuser "$username" -g $username echo "Tomatoes" > /home/$username/fruit.txt
+        runuser "$username" -g $username echo "- Grapes\n- Oranges\n- Peaches" > /home/$username/rename.txt
+        runuser "$username" -g $username mkdir /home/$username/tree && echo "Just a leaf" > /home/$username/tree/leaf.txt
         # Create a file as root
         echo "high permissions" > /home/$username/perms.txt
     done
