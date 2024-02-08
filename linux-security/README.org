@@ -1,0 +1,3 @@
+#+title: Linux Security
+
+https://github.com/vulhub/vulhub/tree/master/ruby/CVE-2017-17405
