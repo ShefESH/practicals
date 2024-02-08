@@ -1,0 +1,9 @@
+version: '2.3'
+services:
+  linux:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "2121:2121"
